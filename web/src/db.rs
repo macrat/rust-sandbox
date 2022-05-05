@@ -2,6 +2,7 @@ use sqlx::sqlite::{SqliteConnectOptions, SqlitePool, SqlitePoolOptions, SqliteRo
 use sqlx::Result;
 use sqlx::Row;
 
+#[derive(Debug, PartialEq)]
 pub struct Note {
     pub id: i64,
     pub text: String,
@@ -56,5 +57,67 @@ impl Database {
             .await?;
 
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::tempdir;
+
+    #[actix_web::test]
+    async fn test() {
+        let dir = tempdir().unwrap();
+        let db = Database::connect(dir.path().join("db.sqlite").to_str().unwrap())
+            .await
+            .unwrap();
+
+        db.register(&"hello".to_string()).await.unwrap();
+        assert_eq!(
+            db.get_all().await.unwrap(),
+            vec![Note {
+                id: 1,
+                text: "hello".to_string()
+            }],
+        );
+
+        db.register(&"world".to_string()).await.unwrap();
+        assert_eq!(
+            db.get_all().await.unwrap(),
+            vec![
+                Note {
+                    id: 1,
+                    text: "hello".to_string()
+                },
+                Note {
+                    id: 2,
+                    text: "world".to_string()
+                },
+            ],
+        );
+
+        db.remove(1).await.unwrap();
+        assert_eq!(
+            db.get_all().await.unwrap(),
+            vec![Note {
+                id: 2,
+                text: "world".to_string()
+            },],
+        );
+
+        db.register(&"hello".to_string()).await.unwrap();
+        assert_eq!(
+            db.get_all().await.unwrap(),
+            vec![
+                Note {
+                    id: 2,
+                    text: "world".to_string()
+                },
+                Note {
+                    id: 3,
+                    text: "hello".to_string()
+                },
+            ],
+        );
     }
 }
