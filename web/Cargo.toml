@@ -1,0 +1,10 @@
+[package]
+name = "web"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+actix-web = "4"
+askama = "0"
+sqlx = { version = "0", features = ["runtime-actix-native-tls", "sqlite"] }

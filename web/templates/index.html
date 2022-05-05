@@ -1,0 +1,8 @@
+<ul>{% for x in notes %}
+    <li>{{ x.text }} <a href="/{{ x.id }}/remove">[X]</a></li>{% endfor %}
+</ul>
+
+<form action="/register" method="POST">
+    <input name="text" autofocus />
+    <button type="submit">add</button>
+</form>
